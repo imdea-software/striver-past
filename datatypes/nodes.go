@@ -2,8 +2,8 @@ package datatypes
 
 // interface
 type internalNode interface {
-    Exec (t Time, inpipes InPipes) EvPayload;
-    Rinse (t Time, inpipes InPipes)
+    Exec (t Time, w interface{}, inpipes InPipes) EvPayload;
+    Rinse (inpipes InPipes)
 }
 
 type TickerNode interface {

@@ -9,7 +9,7 @@ func (node ConstTickerNode) Vote (t Time) *Time {
     return nil
 }
 
-func (node ConstTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
+func (node ConstTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
     if t==node.ConstT {
         return some(node.ConstW)
     }
@@ -25,7 +25,7 @@ func (node SrcTickerNode) Vote (t Time) *Time {
     return nil
 }
 
-func (node SrcTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
+func (node SrcTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
     ev,ok := inpipes.consume(SrcSignal)
     if !ok {
         panic("No input signal!")
@@ -49,13 +49,13 @@ func (node DelayTickerNode) Vote (t Time) *Time {
     return &node.alarms[0].time
 }
 
-func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvPayload) EvPayload) {
+func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvPayload) EvPayload) []Event {
     i:=0
     for ;i < len(alarms); i++ {
         if (alarms[i].time == newev.time) {
             // Use combiner
             alarms[i].payload = combiner(alarms[i].payload, newev.payload)
-            return
+            return alarms
         }
         if (alarms[i].time > newev.time) {
             break
@@ -66,9 +66,10 @@ func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvP
         copy(alarms[i+1:], alarms[i:])
         alarms[i] = newev
     }
+    return alarms
 }
 
-func (node DelayTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
+func (node DelayTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
     if t==node.alarms[0].time {
         node.alarms = node.alarms[1:]
         return some(node.alarms[0].payload)
@@ -81,7 +82,7 @@ func (node DelayTickerNode) Rinse (inpipes InPipes) {
     if exists {
         payload := ev.payload.val.(EpsVal)
         newev := Event{ev.time+payload.eps, some(payload.val)}
-        insertInPlace(node.alarms, newev, node.Combiner)
+        node.alarms = insertInPlace(node.alarms, newev, node.Combiner)
     }
 }
 
