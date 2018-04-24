@@ -43,7 +43,7 @@ func (node WNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
 func (node WNode) Rinse (inpipes InPipes) {
 }
 
-// PrevValNode
+// aux funs
 
 func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
     if (len(seen) == 0 || !cmpfun(seen[0].time)) {
@@ -59,6 +59,8 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
     return seen, some(seen[0])
 }
 
+// PrevValNode
+
 func (node PrevValNode) Exec (_ Time, _ interface{}, inpipes InPipes) EvPayload {
     ev,ok := inpipes.consume(TickSignal)
     if !ok {
@@ -69,15 +71,49 @@ func (node PrevValNode) Exec (_ Time, _ interface{}, inpipes InPipes) EvPayload 
         return ev.payload
     }
     limitT := ev.payload.val.(Time)
-    lowerthant := func(t Time) bool {
-        return t<limitT
+    lowerthant := func(seent Time) bool {
+        return seent<limitT
     }
-    newseen, t := consumeWhile(node.seen, lowerthant)
+    newseen, rett := consumeWhile(node.seen, lowerthant)
     node.seen = newseen
-    return t
+    return rett
 }
 
 func (node PrevValNode) Rinse (inpipes InPipes) {
+    ev,ok := inpipes.consume(SrcSignal)
+    if !ok {
+        panic("No input signal!")
+    }
+    if (ev !=nil) {
+        node.seen = append(node.seen, *ev)
+    }
+}
+
+// PrevEqValNode
+
+func (node PrevEqValNode) Exec (t Time, _ interface{}, inpipes InPipes) EvPayload {
+    ev,ok := inpipes.consume(TickSignal)
+    if !ok {
+        panic("No input tick signal!")
+    }
+    if !ev.payload.isSet {
+        // outside
+        return ev.payload
+    }
+    limitT := ev.payload.val.(Time)
+    if (limitT == t) {
+        // It might be now
+        node.Rinse(inpipes)
+    }
+    leqthant := func(seent Time) bool {
+        return seent<=limitT
+    }
+    newseen, rett := consumeWhile(node.seen, leqthant)
+    node.seen = newseen
+    return rett
+}
+
+func (node PrevEqValNode) Rinse (inpipes InPipes) {
     ev,ok := inpipes.consume(SrcSignal)
     if !ok {
         panic("No input signal!")
