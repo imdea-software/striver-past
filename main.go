@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-    tn := dt.ConstTickerNode{5}
+    tn := dt.ConstTickerNode{5,0}
     fmt.Println(tn)
 }

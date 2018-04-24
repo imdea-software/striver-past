@@ -1,8 +1,19 @@
 package datatypes
 
+// interface
+type internalNode interface {
+    Exec (t Time, inpipes InPipes) EvPayload;
+    Rinse (t Time, inpipes InPipes)
+}
+
+type TickerNode interface {
+    Vote (t Time) *Time;
+}
+
 // tickers
 type ConstTickerNode struct {
-    Value Time
+    ConstT Time
+    ConstW Time
 }
 
 type SrcTickerNode struct {
@@ -20,6 +31,9 @@ type UnionTickerNode struct {
 // values
 
 type TNode struct {
+}
+
+type WNode struct {
 }
 
 type PrevNode struct {

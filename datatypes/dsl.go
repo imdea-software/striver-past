@@ -20,5 +20,13 @@ type EvPayload struct {
     val interface{}
 }
 
-var UnitPayload EvPayload = EvPayload{true, nil}
+func some(val interface{}) EvPayload {
+    return EvPayload{true, val}
+}
+
 var NothingPayload EvPayload = EvPayload{false, nil}
+
+type EpsVal struct {
+    eps Time
+    val interface{}
+}
