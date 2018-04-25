@@ -12,3 +12,11 @@ func Min(t0 *Time, t1 *Time) *Time {
     }
     return t1
 }
+
+func Leq(t0 Time, t1 Time) bool {
+    return t0 <= t1
+}
+
+func Lt(t0 Time, t1 Time) bool {
+    return t0 < t1
+}

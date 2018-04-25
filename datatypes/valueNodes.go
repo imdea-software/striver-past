@@ -59,6 +59,62 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
     return seen, Some(seen[0])
 }
 
+// Beta testing: generic funs
+
+func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes), tpointernode ValNode, cmpfun func(t0 Time, t1 Time) bool, seen *[]Event, updateSeen func([]Event), extractor func(Event) interface{}) EvPayload {
+    tpayload := tpointernode.Exec(t,w,inpipes)
+    if !tpayload.IsSet {
+        // outside
+        return tpayload
+    }
+    limitT := tpayload.Val.(Time)
+    if (limitT == t) {
+        // It might be now
+        rinsefun(inpipes)
+    }
+    newseen, rett := consumeWhile(*seen, func(t Time) bool {return cmpfun(t, limitT)})
+    updateSeen(newseen)
+    if !rett.IsSet {
+        // outside
+        return rett
+    }
+    ev := rett.Val.(Event)
+    if (!ev.Payload.IsSet) {
+        panic("Empty payload in queue??")
+    }
+    return Some(extractor(ev))
+}
+
+func genericRinse (inpipes InPipes, tpointernode ValNode, srcStream StreamName, seen []Event, updateSeen func([]Event)) {
+    tpointernode.Rinse(inpipes)
+    ev := inpipes.strictConsume(srcStream)
+    if ev.Payload.IsSet && (len(seen) == 0 || ev.Time!=seen[len(seen)-1].Time) {
+        updateSeen(append(seen, ev))
+    }
+}
+
+func extractPayload(ev Event) interface{} {
+    return ev.Payload
+}
+
+func extractTime(ev Event) interface{} {
+    return ev.Time
+}
+
+// PrevEqValNode
+
+func (node *PrevEqValNode) updateSeen (newseen []Event) {
+    node.Seen = newseen
+}
+
+func (node *PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Leq, &node.Seen, node.updateSeen, extractPayload)
+}
+
+func (node *PrevEqValNode) Rinse (inpipes InPipes) {
+    genericRinse(inpipes, node.TPointer, node.SrcStream, node.Seen, node.updateSeen)
+}
+
 // PrevValNode
 
 func (node *PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
@@ -86,73 +142,5 @@ func (node *PrevValNode) Rinse (inpipes InPipes) {
     ev := inpipes.strictConsume(node.SrcStream)
     if ev.Payload.IsSet {
         node.Seen = append(node.Seen, ev)
-    }
-}
-
-// PrevEqValNode
-
-func (node *PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
-    tpayload := node.TPointer.Exec(t,w,inpipes)
-    if !tpayload.IsSet {
-        // outside
-        return tpayload
-    }
-    limitT := tpayload.Val.(Time)
-    if (limitT == t) {
-        // It might be now
-        ev := inpipes.strictConsume(node.SrcStream)
-        if ev.Payload.IsSet {
-            node.Seen = append(node.Seen, ev)
-        }
-    }
-    leqthant := func(seent Time) bool {
-        return seent<=limitT
-    }
-    newseen, rett := consumeWhile(node.Seen, leqthant)
-    node.Seen = newseen
-    if !rett.IsSet {
-        // outside
-        return rett
-    }
-    ev := rett.Val.(Event)
-    return ev.Payload
-}
-
-func (node *PrevEqValNode) Rinse (inpipes InPipes) {
-    node.TPointer.Rinse(inpipes)
-    ev := inpipes.strictConsume(node.SrcStream)
-    if ev.Payload.IsSet && (len(node.Seen) == 0 || ev.Time!=node.Seen[len(node.Seen)-1].Time) {
-        node.Seen = append(node.Seen, ev)
-    }
-}
-
-
-// Beta testing: generic funs
-
-func genericExec(t Time, w interface{}, inpipes InPipes, tpointernode ValNode, itsnowfun func(), cmpfun func(seent Time) bool, seen []Event, updateSeen func([]Event)) EvPayload {
-    tpayload := tpointernode.Exec(t,w,inpipes)
-    if !tpayload.IsSet {
-        // outside
-        return tpayload
-    }
-    limitT := tpayload.Val.(Time)
-    if (limitT == t) {
-        // It might be now
-        itsnowfun()
-    }
-    newseen, rett := consumeWhile(seen, cmpfun)
-    updateSeen(newseen)
-    if !rett.IsSet {
-        // outside
-        return rett
-    }
-    return Some(rett.Val)
-}
-
-func genericRinse (inpipes InPipes, tpointernode ValNode, srcStream StreamName, seen []Event, updateSeen func([]Event)) {
-    tpointernode.Rinse(inpipes)
-    ev := inpipes.strictConsume(srcStream)
-    if ev.Payload.IsSet && (len(seen) == 0 || ev.Time!=seen[len(seen)-1].Time) {
-        updateSeen(append(seen, ev))
     }
 }
