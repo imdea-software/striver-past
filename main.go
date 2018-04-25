@@ -18,7 +18,7 @@ func (ticker *regularTicker) PeekNextTime () dt.Time {
 func (ticker *regularTicker) Exec (t dt.Time) dt.EvPayload {
     ticker.lastT = t
     if t%ticker.interval == 0 {
-        return dt.Some(t/ticker.interval)
+        return dt.Some(dt.EpsVal{t/ticker.interval, nil})
     }
     return dt.NothingPayload
 }
@@ -45,8 +45,8 @@ func main() {
     inpipes := new(dt.InPipes)
     inpipes.Reset()
     valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevEqValNode{dt.TNode{}, "odds", []dt.Event{}}}
-    //shiftedvalodds := dt.OutStream{"shiftedoddsvals", dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
-    outStreams := []dt.OutStream{valodds}//, shiftedvalodds}
+    shiftedvalodds := dt.OutStream{"shiftedthreesvals", &dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, &dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
+    outStreams := []dt.OutStream{valodds, shiftedvalodds}
 
     var lastT dt.Time = -1 // minus infty
 
@@ -66,7 +66,6 @@ func main() {
         if nextT == nil {
             break // ???
         }
-        fmt.Printf("Voted time: %v\n", *nextT)
         // exec on input streams
         for _, instr := range inStreams {
             payload := instr.StreamDef.Exec(*nextT)

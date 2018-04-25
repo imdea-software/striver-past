@@ -35,7 +35,7 @@ func (node SrcTickerNode) Rinse (inpipes InPipes) {
 
 // delay ticker
 
-func (node DelayTickerNode) Vote (t Time) *Time {
+func (node *DelayTickerNode) Vote (t Time) *Time {
     if len(node.Alarms)==0 {
         return nil
     }
@@ -62,19 +62,22 @@ func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvP
     return alarms
 }
 
-func (node DelayTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
+func (node *DelayTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
     if len(node.Alarms)>0 && t==node.Alarms[0].Time {
+        ret := Some(node.Alarms[0].Payload)
         node.Alarms = node.Alarms[1:]
-        return Some(node.Alarms[0].Payload)
+        return ret
     }
     return NothingPayload
 }
 
-func (node DelayTickerNode) Rinse (inpipes InPipes) {
+func (node *DelayTickerNode) Rinse (inpipes InPipes) {
     ev := inpipes.strictConsume(node.SrcStream)
-    Payload := ev.Payload.Val.(EpsVal)
-    newev := Event{ev.Time+Payload.eps, Some(Payload.val)}
-    node.Alarms = insertInPlace(node.Alarms, newev, node.Combiner)
+    if (ev.Payload.IsSet) {
+        payload := ev.Payload.Val.(EpsVal)
+        newev := Event{ev.Time+payload.Eps, Some(payload.Val)}
+        node.Alarms = insertInPlace(node.Alarms, newev, node.Combiner)
+    }
 }
 
 // TODO: Union ticker

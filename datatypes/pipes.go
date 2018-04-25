@@ -21,6 +21,11 @@ func (inpipes InPipes) strictConsume(streamId StreamName) Event {
 }
 
 func (inpipes InPipes) Put(streamId StreamName, ev Event) {
-    fmt.Printf("Stream %s saying %v\n", streamId, ev)
+    fmt.Printf("%s[%d]: ", streamId, ev.Time)
+    if !ev.Payload.IsSet {
+        fmt.Println("NOTICK")
+    } else {
+        fmt.Println(ev.Payload.Val)
+    }
     inpipes.Pipes[streamId] = ev
 }

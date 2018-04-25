@@ -21,8 +21,8 @@ func Some(val interface{}) EvPayload {
 var NothingPayload EvPayload = EvPayload{false, nil}
 
 type EpsVal struct {
-    eps Time
-    val interface{}
+    Eps Time
+    Val interface{}
 }
 
 type OutStream struct {
