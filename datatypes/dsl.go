@@ -4,13 +4,6 @@ type Time int
 
 type StreamName string
 
-type PipeId int
-
-const (
-   SrcSignal    PipeId = 0
-   TickSignal    PipeId = 1
-)
-
 type Event struct {
     time Time;
     payload EvPayload

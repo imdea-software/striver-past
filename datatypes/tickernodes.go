@@ -9,7 +9,7 @@ func (node ConstTickerNode) Vote (t Time) *Time {
     return nil
 }
 
-func (node ConstTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+func (node ConstTickerNode) Exec (t Time, _ InPipes) EvPayload {
     if t==node.ConstT {
         return some(node.ConstW)
     }
@@ -25,19 +25,12 @@ func (node SrcTickerNode) Vote (t Time) *Time {
     return nil
 }
 
-func (node SrcTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
-    ev,ok := inpipes.consume(SrcSignal)
-    if !ok {
-        panic("No input signal!")
-    }
-    if ev != nil {
-        return some(ev.payload)
-    }
-    return NothingPayload
+func (node SrcTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
+    ev := inpipes.strictConsume(node.SrcStream)
+    return some(ev.payload)
 }
 
 func (node SrcTickerNode) Rinse (inpipes InPipes) {
-    inpipes.rinse(SrcSignal)
 }
 
 // delay ticker
@@ -69,7 +62,7 @@ func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvP
     return alarms
 }
 
-func (node DelayTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+func (node DelayTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
     if t==node.alarms[0].time {
         node.alarms = node.alarms[1:]
         return some(node.alarms[0].payload)
@@ -78,12 +71,10 @@ func (node DelayTickerNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayl
 }
 
 func (node DelayTickerNode) Rinse (inpipes InPipes) {
-    ev,exists := inpipes.consume(SrcSignal)
-    if exists {
-        payload := ev.payload.val.(EpsVal)
-        newev := Event{ev.time+payload.eps, some(payload.val)}
-        node.alarms = insertInPlace(node.alarms, newev, node.Combiner)
-    }
+    ev := inpipes.strictConsume(node.SrcStream)
+    payload := ev.payload.val.(EpsVal)
+    newev := Event{ev.time+payload.eps, some(payload.val)}
+    node.alarms = insertInPlace(node.alarms, newev, node.Combiner)
 }
 
 // TODO: Union ticker

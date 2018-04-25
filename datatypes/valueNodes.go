@@ -27,16 +27,16 @@ type FuncNode struct {
 
 // TNode
 
-func (node TNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+func (node TNode) Exec (t Time, _ interface{}, _ InPipes) EvPayload {
     return some(t)
 }
 
-func (node TNode) Rinse (inpipes InPipes) {
+func (node TNode) Rinse (_ InPipes) {
 }
 
 // WNode
 
-func (node WNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+func (node WNode) Exec (_ Time, w interface{}, _ InPipes) EvPayload {
     return some(w)
 }
 
@@ -61,16 +61,13 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
 
 // PrevValNode
 
-func (node PrevValNode) Exec (_ Time, _ interface{}, inpipes InPipes) EvPayload {
-    ev,ok := inpipes.consume(TickSignal)
-    if !ok {
-        panic("No input tick signal!")
-    }
-    if !ev.payload.isSet {
+func (node PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+    tpayload := node.TPointer.Exec(t,w,inpipes)
+    if !tpayload.isSet {
         // outside
-        return ev.payload
+        return tpayload
     }
-    limitT := ev.payload.val.(Time)
+    limitT := tpayload.val.(Time)
     lowerthant := func(seent Time) bool {
         return seent<limitT
     }
@@ -80,30 +77,28 @@ func (node PrevValNode) Exec (_ Time, _ interface{}, inpipes InPipes) EvPayload 
 }
 
 func (node PrevValNode) Rinse (inpipes InPipes) {
-    ev,ok := inpipes.consume(SrcSignal)
-    if !ok {
-        panic("No input signal!")
-    }
-    if (ev !=nil) {
-        node.seen = append(node.seen, *ev)
+    node.TPointer.Rinse(inpipes)
+    ev := inpipes.strictConsume(node.SrcStream)
+    if ev.payload.isSet {
+        node.seen = append(node.seen, ev)
     }
 }
 
 // PrevEqValNode
 
-func (node PrevEqValNode) Exec (t Time, _ interface{}, inpipes InPipes) EvPayload {
-    ev,ok := inpipes.consume(TickSignal)
-    if !ok {
-        panic("No input tick signal!")
-    }
-    if !ev.payload.isSet {
+func (node PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+    tpayload := node.TPointer.Exec(t,w,inpipes)
+    if !tpayload.isSet {
         // outside
-        return ev.payload
+        return tpayload
     }
-    limitT := ev.payload.val.(Time)
+    limitT := tpayload.val.(Time)
     if (limitT == t) {
         // It might be now
-        node.Rinse(inpipes)
+        ev := inpipes.strictConsume(node.SrcStream)
+        if ev.payload.isSet {
+            node.seen = append(node.seen, ev)
+        }
     }
     leqthant := func(seent Time) bool {
         return seent<=limitT
@@ -114,11 +109,9 @@ func (node PrevEqValNode) Exec (t Time, _ interface{}, inpipes InPipes) EvPayloa
 }
 
 func (node PrevEqValNode) Rinse (inpipes InPipes) {
-    ev,ok := inpipes.consume(SrcSignal)
-    if !ok {
-        panic("No input signal!")
-    }
-    if (ev !=nil) {
-        node.seen = append(node.seen, *ev)
+    node.TPointer.Rinse(inpipes)
+    ev := inpipes.strictConsume(node.SrcStream)
+    if ev.payload.isSet && (len(node.seen) == 0 || ev.time!=node.seen[len(node.seen)-1].time) {
+        node.seen = append(node.seen, ev)
     }
 }

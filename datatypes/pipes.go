@@ -1,17 +1,19 @@
 package datatypes
 
 type InPipes struct {
-    pipes map[PipeId]*Event
+    pipes map[StreamName]Event
 }
 
 // aux methods
 
-func (inpipes InPipes) rinse(pipeid PipeId) {
-    inpipes.pipes[pipeid] = nil
+func (inpipes InPipes) Reset() {
+    inpipes.pipes = make(map[StreamName]Event)
 }
 
-func (inpipes InPipes) consume(pipeid PipeId) (*Event, bool) {
-    defer inpipes.rinse(pipeid)
-    ev,ok := inpipes.pipes[pipeid]
-    return ev,ok
+func (inpipes InPipes) strictConsume(streamId StreamName) Event {
+    ev,ok := inpipes.pipes[streamId]
+    if !ok {
+        panic("Failed strict consume")
+    }
+    return ev
 }
