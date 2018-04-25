@@ -5,13 +5,13 @@ type Time int
 type StreamName string
 
 type Event struct {
-    time Time;
-    payload EvPayload
+    Time Time;
+    Payload EvPayload
 }
 
 type EvPayload struct {
-    isSet bool;
-    val interface{}
+    IsSet bool;
+    Val interface{}
 }
 
 func Some(val interface{}) EvPayload {
@@ -26,9 +26,9 @@ type EpsVal struct {
 }
 
 type OutStream struct {
-    name StreamName
-    ticksDef TickerNode
-    valDef ValNode
+    Name StreamName
+    TicksDef TickerNode
+    ValDef ValNode
 }
 
 type InStream struct {

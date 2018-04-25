@@ -57,13 +57,13 @@ type PrevEqNode struct {
 type PrevValNode struct {
     TPointer ValNode
     SrcStream StreamName
-    seen []Event
+    Seen []Event
 }
 
 type PrevEqValNode struct {
     TPointer ValNode
     SrcStream StreamName
-    seen []Event
+    Seen []Event
 }
 
 type FuncNode struct {
