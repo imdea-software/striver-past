@@ -23,31 +23,19 @@ func (ticker *regularTicker) Exec (t dt.Time) dt.EvPayload {
     return dt.NothingPayload
 }
 
-func min(t0 *dt.Time, t1 *dt.Time) *dt.Time {
-    if t0 == nil {
-        return t1
-    }
-    if t1 == nil {
-        return t0
-    }
-    if *t0 < *t1 {
-        return t0
-    }
-    return t1
-}
-
 func main() {
-
+    // Test streams
     oddsInStream := dt.InStream {"odds", &regularTicker{2,0}}
     allInStream := dt.InStream {"threes", &regularTicker{3,0}}
     inStreams := []dt.InStream{oddsInStream, allInStream}
 
-    inpipes := new(dt.InPipes)
-    inpipes.Reset()
     valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevEqValNode{dt.TNode{}, "odds", []dt.Event{}}}
     shiftedvalodds := dt.OutStream{"shiftedthreesvals", &dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, &dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
     outStreams := []dt.OutStream{valodds, shiftedvalodds}
+    // Endof test streams
 
+    inpipes := new(dt.InPipes)
+    inpipes.Reset()
     var lastT dt.Time = -1 // minus infty
 
     for true {
@@ -55,12 +43,12 @@ func main() {
         // vote instreams
         for _, instr := range inStreams {
             aux := instr.StreamDef.PeekNextTime()
-            nextT = min(&aux, nextT)
+            nextT = dt.Min(&aux, nextT)
         }
         // vote outstreams
         for _, outstr := range outStreams {
             aux := outstr.TicksDef.Vote(lastT)
-            nextT = min(aux, nextT)
+            nextT = dt.Min(aux, nextT)
         }
         // end of execution
         if nextT == nil {

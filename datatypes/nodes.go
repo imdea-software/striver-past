@@ -29,8 +29,8 @@ type DelayTickerNode struct {
 }
 
 type UnionTickerNode struct {
-    leftTicker TickerNode
-    rightTicker TickerNode
+    LeftTicker TickerNode
+    RightTicker TickerNode
     Combiner func(a EvPayload, b EvPayload) EvPayload
 }
 
@@ -45,13 +45,13 @@ type WNode struct {
 type PrevNode struct {
     TPointer ValNode
     SrcStream StreamName
-    seen []Time
+    Seen []Time
 }
 
 type PrevEqNode struct {
     TPointer ValNode
     SrcStream StreamName
-    seen []Time
+    Seen []Time
 }
 
 type PrevValNode struct {

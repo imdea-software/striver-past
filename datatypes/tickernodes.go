@@ -80,5 +80,25 @@ func (node *DelayTickerNode) Rinse (inpipes InPipes) {
     }
 }
 
-// TODO: Union ticker
+// Union ticker
 
+func (node UnionTickerNode) Vote (t Time) *Time {
+    return Min(node.LeftTicker.Vote(t), node.RightTicker.Vote(t))
+}
+
+func (node UnionTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
+    pleft := node.LeftTicker.Exec(t, inpipes)
+    pright := node.RightTicker.Exec(t, inpipes)
+    if (!pleft.IsSet) {
+        return pright
+    }
+    if (!pright.IsSet) {
+        return pleft
+    }
+    return node.Combiner(pleft, pright)
+}
+
+func (node UnionTickerNode) Rinse (inpipes InPipes) {
+    node.LeftTicker.Rinse(inpipes)
+    node.RightTicker.Rinse(inpipes)
+}
