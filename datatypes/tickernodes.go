@@ -11,7 +11,7 @@ func (node ConstTickerNode) Vote (t Time) *Time {
 
 func (node ConstTickerNode) Exec (t Time, _ InPipes) EvPayload {
     if t==node.ConstT {
-        return some(node.ConstW)
+        return Some(node.ConstW)
     }
     return NothingPayload
 }
@@ -27,7 +27,7 @@ func (node SrcTickerNode) Vote (t Time) *Time {
 
 func (node SrcTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
     ev := inpipes.strictConsume(node.SrcStream)
-    return some(ev.payload)
+    return Some(ev.payload)
 }
 
 func (node SrcTickerNode) Rinse (inpipes InPipes) {
@@ -65,7 +65,7 @@ func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvP
 func (node DelayTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
     if t==node.alarms[0].time {
         node.alarms = node.alarms[1:]
-        return some(node.alarms[0].payload)
+        return Some(node.alarms[0].payload)
     }
     return NothingPayload
 }
@@ -73,7 +73,7 @@ func (node DelayTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
 func (node DelayTickerNode) Rinse (inpipes InPipes) {
     ev := inpipes.strictConsume(node.SrcStream)
     payload := ev.payload.val.(EpsVal)
-    newev := Event{ev.time+payload.eps, some(payload.val)}
+    newev := Event{ev.time+payload.eps, Some(payload.val)}
     node.alarms = insertInPlace(node.alarms, newev, node.Combiner)
 }
 

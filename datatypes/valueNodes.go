@@ -28,7 +28,7 @@ type FuncNode struct {
 // TNode
 
 func (node TNode) Exec (t Time, _ interface{}, _ InPipes) EvPayload {
-    return some(t)
+    return Some(t)
 }
 
 func (node TNode) Rinse (_ InPipes) {
@@ -37,7 +37,7 @@ func (node TNode) Rinse (_ InPipes) {
 // WNode
 
 func (node WNode) Exec (_ Time, w interface{}, _ InPipes) EvPayload {
-    return some(w)
+    return Some(w)
 }
 
 func (node WNode) Rinse (inpipes InPipes) {
@@ -56,7 +56,7 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
         }
     }
     seen = seen[i-1:]
-    return seen, some(seen[0])
+    return seen, Some(seen[0])
 }
 
 // PrevValNode

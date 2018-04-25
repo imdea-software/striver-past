@@ -14,7 +14,7 @@ type EvPayload struct {
     val interface{}
 }
 
-func some(val interface{}) EvPayload {
+func Some(val interface{}) EvPayload {
     return EvPayload{true, val}
 }
 
@@ -23,4 +23,20 @@ var NothingPayload EvPayload = EvPayload{false, nil}
 type EpsVal struct {
     eps Time
     val interface{}
+}
+
+type OutStream struct {
+    name StreamName
+    ticksDef TickerNode
+    valDef ValNode
+}
+
+type InStream struct {
+    Name StreamName
+    StreamDef InStreamDef
+}
+
+type InStreamDef interface {
+    PeekNextTime() Time // infinite input streams
+    Exec(t Time) EvPayload
 }
