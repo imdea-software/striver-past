@@ -67,6 +67,6 @@ type PrevEqValNode struct {
 }
 
 type FuncNode struct {
-    argNodes []ValNode
+    ArgNodes []ValNode
     Innerfun func (args ...EvPayload) EvPayload
 }

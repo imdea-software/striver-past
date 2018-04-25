@@ -1,30 +1,5 @@
 package datatypes
 
-/*
-type TNode struct {
-}
-
-type PrevNode struct {
-    seen []Time
-}
-
-type PrevEqNode struct {
-    seen []Time
-}
-
-type PrevValNode struct {
-    seen []Event
-}
-
-type PrevEqValNode struct {
-    seen []Event
-}
-
-type FuncNode struct {
-    Innerfun func (args ...EvPayload) EvPayload
-}
-*/
-
 // TNode
 
 func (node TNode) Exec (t Time, _ interface{}, _ InPipes) EvPayload {
@@ -139,4 +114,20 @@ func (node *PrevNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
 
 func (node *PrevNode) Rinse (inpipes InPipes) {
     genericRinse(inpipes, node.TPointer, node.SrcStream, &node.Seen)
+}
+
+// FuncNode
+
+func (node FuncNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+    args := make([]EvPayload, len(node.ArgNodes))
+    for i,valnode := range node.ArgNodes {
+        args[i] = valnode.Exec(t, w, inpipes)
+    }
+    return node.Innerfun(args...)
+}
+
+func (node FuncNode) Rinse (inpipes InPipes) {
+    for _,valnode := range node.ArgNodes {
+        valnode.Rinse(inpipes)
+    }
 }
