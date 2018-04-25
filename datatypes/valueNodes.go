@@ -125,3 +125,34 @@ func (node *PrevEqValNode) Rinse (inpipes InPipes) {
         node.Seen = append(node.Seen, ev)
     }
 }
+
+
+// Beta testing: generic funs
+
+func genericExec(t Time, w interface{}, inpipes InPipes, tpointernode ValNode, itsnowfun func(), cmpfun func(seent Time) bool, seen []Event, updateSeen func([]Event)) EvPayload {
+    tpayload := tpointernode.Exec(t,w,inpipes)
+    if !tpayload.IsSet {
+        // outside
+        return tpayload
+    }
+    limitT := tpayload.Val.(Time)
+    if (limitT == t) {
+        // It might be now
+        itsnowfun()
+    }
+    newseen, rett := consumeWhile(seen, cmpfun)
+    updateSeen(newseen)
+    if !rett.IsSet {
+        // outside
+        return rett
+    }
+    return Some(rett.Val)
+}
+
+func genericRinse (inpipes InPipes, tpointernode ValNode, srcStream StreamName, seen []Event, updateSeen func([]Event)) {
+    tpointernode.Rinse(inpipes)
+    ev := inpipes.strictConsume(srcStream)
+    if ev.Payload.IsSet && (len(seen) == 0 || ev.Time!=seen[len(seen)-1].Time) {
+        updateSeen(append(seen, ev))
+    }
+}
