@@ -81,6 +81,11 @@ func main() {
                 }
             }
         }
+        // rinse output streams
+        for _, outstr:= range outStreams {
+            outstr.TicksDef.Rinse(*inpipes)
+            outstr.ValDef.Rinse(*inpipes)
+        }
         // reset pipes
         inpipes.Reset()
         lastT = *nextT
