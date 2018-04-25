@@ -45,13 +45,13 @@ type WNode struct {
 type PrevNode struct {
     TPointer ValNode
     SrcStream StreamName
-    Seen []Time
+    Seen []Event
 }
 
 type PrevEqNode struct {
     TPointer ValNode
     SrcStream StreamName
-    Seen []Time
+    Seen []Event
 }
 
 type PrevValNode struct {

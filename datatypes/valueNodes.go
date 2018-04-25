@@ -61,7 +61,7 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
 
 // Beta testing: generic funs
 
-func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes), tpointernode ValNode, cmpfun func(t0 Time, t1 Time) bool, seen *[]Event, updateSeen func([]Event), extractor func(Event) interface{}) EvPayload {
+func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes), tpointernode ValNode, cmpfun func(t0 Time, t1 Time) bool, seen *[]Event, extractor func(Event) interface{}) EvPayload {
     tpayload := tpointernode.Exec(t,w,inpipes)
     if !tpayload.IsSet {
         // outside
@@ -73,7 +73,7 @@ func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes),
         rinsefun(inpipes)
     }
     newseen, rett := consumeWhile(*seen, func(t Time) bool {return cmpfun(t, limitT)})
-    updateSeen(newseen)
+    *seen = newseen
     if !rett.IsSet {
         // outside
         return rett
@@ -85,11 +85,11 @@ func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes),
     return Some(extractor(ev))
 }
 
-func genericRinse (inpipes InPipes, tpointernode ValNode, srcStream StreamName, seen []Event, updateSeen func([]Event)) {
+func genericRinse (inpipes InPipes, tpointernode ValNode, srcStream StreamName, seen *[]Event) {
     tpointernode.Rinse(inpipes)
     ev := inpipes.strictConsume(srcStream)
-    if ev.Payload.IsSet && (len(seen) == 0 || ev.Time!=seen[len(seen)-1].Time) {
-        updateSeen(append(seen, ev))
+    if ev.Payload.IsSet && (len(*seen) == 0 || ev.Time!=(*seen)[len(*seen)-1].Time) {
+        *seen = (append(*seen, ev))
     }
 }
 
@@ -103,44 +103,40 @@ func extractTime(ev Event) interface{} {
 
 // PrevEqValNode
 
-func (node *PrevEqValNode) updateSeen (newseen []Event) {
-    node.Seen = newseen
-}
-
 func (node *PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
-    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Leq, &node.Seen, node.updateSeen, extractPayload)
+    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Leq, &node.Seen, extractPayload)
 }
 
 func (node *PrevEqValNode) Rinse (inpipes InPipes) {
-    genericRinse(inpipes, node.TPointer, node.SrcStream, node.Seen, node.updateSeen)
+    genericRinse(inpipes, node.TPointer, node.SrcStream, &node.Seen)
 }
 
 // PrevValNode
 
 func (node *PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
-    tpayload := node.TPointer.Exec(t,w,inpipes)
-    if !tpayload.IsSet {
-        // outside
-        return tpayload
-    }
-    limitT := tpayload.Val.(Time)
-    lowerthant := func(seent Time) bool {
-        return seent<limitT
-    }
-    newseen, rett := consumeWhile(node.Seen, lowerthant)
-    node.Seen = newseen
-    if !rett.IsSet {
-        // outside
-        return rett
-    }
-    ev := rett.Val.(Event)
-    return ev.Payload
+    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Lt, &node.Seen, extractPayload)
 }
 
 func (node *PrevValNode) Rinse (inpipes InPipes) {
-    node.TPointer.Rinse(inpipes)
-    ev := inpipes.strictConsume(node.SrcStream)
-    if ev.Payload.IsSet {
-        node.Seen = append(node.Seen, ev)
-    }
+    genericRinse(inpipes, node.TPointer, node.SrcStream, &node.Seen)
+}
+
+// PrevEqNode
+
+func (node *PrevEqNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Leq, &node.Seen, extractTime)
+}
+
+func (node *PrevEqNode) Rinse (inpipes InPipes) {
+    genericRinse(inpipes, node.TPointer, node.SrcStream, &node.Seen)
+}
+
+// PrevEqNode
+
+func (node *PrevNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Lt, &node.Seen, extractTime)
+}
+
+func (node *PrevNode) Rinse (inpipes InPipes) {
+    genericRinse(inpipes, node.TPointer, node.SrcStream, &node.Seen)
 }
