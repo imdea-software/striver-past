@@ -25,7 +25,7 @@ type SrcTickerNode struct {
 type DelayTickerNode struct {
     SrcStream StreamName
     Combiner func(a EvPayload, b EvPayload) EvPayload;
-    alarms []Event
+    Alarms []Event
 }
 
 type UnionTickerNode struct {

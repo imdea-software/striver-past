@@ -61,7 +61,7 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
 
 // PrevValNode
 
-func (node PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+func (node *PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
     tpayload := node.TPointer.Exec(t,w,inpipes)
     if !tpayload.IsSet {
         // outside
@@ -73,10 +73,15 @@ func (node PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload 
     }
     newseen, rett := consumeWhile(node.Seen, lowerthant)
     node.Seen = newseen
-    return rett
+    if !rett.IsSet {
+        // outside
+        return rett
+    }
+    ev := rett.Val.(Event)
+    return ev.Payload
 }
 
-func (node PrevValNode) Rinse (inpipes InPipes) {
+func (node *PrevValNode) Rinse (inpipes InPipes) {
     node.TPointer.Rinse(inpipes)
     ev := inpipes.strictConsume(node.SrcStream)
     if ev.Payload.IsSet {
@@ -86,7 +91,7 @@ func (node PrevValNode) Rinse (inpipes InPipes) {
 
 // PrevEqValNode
 
-func (node PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
+func (node *PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
     tpayload := node.TPointer.Exec(t,w,inpipes)
     if !tpayload.IsSet {
         // outside
@@ -113,7 +118,7 @@ func (node PrevEqValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayloa
     return ev.Payload
 }
 
-func (node PrevEqValNode) Rinse (inpipes InPipes) {
+func (node *PrevEqValNode) Rinse (inpipes InPipes) {
     node.TPointer.Rinse(inpipes)
     ev := inpipes.strictConsume(node.SrcStream)
     if ev.Payload.IsSet && (len(node.Seen) == 0 || ev.Time!=node.Seen[len(node.Seen)-1].Time) {

@@ -44,8 +44,9 @@ func main() {
 
     inpipes := new(dt.InPipes)
     inpipes.Reset()
-    valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
-    outStreams := []dt.OutStream{valodds}
+    valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevEqValNode{dt.TNode{}, "odds", []dt.Event{}}}
+    //shiftedvalodds := dt.OutStream{"shiftedoddsvals", dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
+    outStreams := []dt.OutStream{valodds}//, shiftedvalodds}
 
     var lastT dt.Time = -1 // minus infty
 
@@ -76,9 +77,9 @@ func main() {
             payload := outstr.TicksDef.Exec(*nextT, *inpipes)
             if payload.IsSet {
                 outpayload := outstr.ValDef.Exec(*nextT, payload.Val, *inpipes)
-                if outpayload.IsSet {
-                    inpipes.Put(outstr.Name, dt.Event{*nextT, outpayload})
-                }
+                inpipes.Put(outstr.Name, dt.Event{*nextT, outpayload})
+            } else {
+                inpipes.Put(outstr.Name, dt.Event{*nextT, dt.NothingPayload})
             }
         }
         // rinse output streams
