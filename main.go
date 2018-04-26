@@ -11,8 +11,10 @@ type regularTicker struct {
     lastT dt.Time
 }
 
-func (ticker *regularTicker) PeekNextTime () dt.Time {
-    return (ticker.lastT/ticker.interval)*ticker.interval+ticker.interval
+func (ticker *regularTicker) PeekNextTime () *dt.Time {
+    ret := new(dt.Time) // give it a "home" (in the heap)
+    *ret = (ticker.lastT/ticker.interval)*ticker.interval+ticker.interval
+    return ret
 }
 
 func (ticker *regularTicker) Exec (t dt.Time) dt.EvPayload {
@@ -29,11 +31,12 @@ func main() {
     allInStream := dt.InStream {"threes", &regularTicker{3,0}}
     inStreams := []dt.InStream{oddsInStream, allInStream}
 
-    valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevEqValNode{dt.TNode{}, "odds", []dt.Event{}}}
+    valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevValNode{dt.TNode{}, "odds", []dt.Event{}}}
     shiftedvalodds := dt.OutStream{"shiftedthreesvals", &dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, &dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
     outStreams := []dt.OutStream{valodds, shiftedvalodds}
     // Endof test streams
 
+    // Initialization
     inpipes := new(dt.InPipes)
     inpipes.Reset()
     var lastT dt.Time = -1 // minus infty
@@ -43,7 +46,7 @@ func main() {
         // vote instreams
         for _, instr := range inStreams {
             aux := instr.StreamDef.PeekNextTime()
-            nextT = dt.Min(&aux, nextT)
+            nextT = dt.Min(aux, nextT)
         }
         // vote outstreams
         for _, outstr := range outStreams {
@@ -52,7 +55,7 @@ func main() {
         }
         // end of execution
         if nextT == nil {
-            break // ???
+            break
         }
         // exec on input streams
         for _, instr := range inStreams {
@@ -80,5 +83,5 @@ func main() {
         time.Sleep(1000 * time.Millisecond)
     }
 
-    fmt.Println(oddsInStream.StreamDef.Exec(6))
+    fmt.Println("End of execution")
 }

@@ -37,6 +37,6 @@ type InStream struct {
 }
 
 type InStreamDef interface {
-    PeekNextTime() Time // infinite input streams
+    PeekNextTime() *Time
     Exec(t Time) EvPayload
 }
