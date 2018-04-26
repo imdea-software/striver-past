@@ -2,11 +2,11 @@ package datatypes
 
 // const ticker
 
-func (node ConstTickerNode) Vote (t Time) *Time {
+func (node ConstTickerNode) Vote (t Time) MaybeTime {
     if t<node.ConstT {
-        return &node.ConstT
+        return SomeTime(node.ConstT)
     }
-    return nil
+    return NothingTime
 }
 
 func (node ConstTickerNode) Exec (t Time, _ InPipes) EvPayload {
@@ -21,8 +21,8 @@ func (node ConstTickerNode) Rinse (inpipes InPipes) {
 
 // src ticker
 
-func (node SrcTickerNode) Vote (t Time) *Time {
-    return nil
+func (node SrcTickerNode) Vote (t Time) MaybeTime {
+    return NothingTime
 }
 
 func (node SrcTickerNode) Exec (t Time, inpipes InPipes) EvPayload {
@@ -35,11 +35,11 @@ func (node SrcTickerNode) Rinse (inpipes InPipes) {
 
 // delay ticker
 
-func (node *DelayTickerNode) Vote (t Time) *Time {
+func (node *DelayTickerNode) Vote (t Time) MaybeTime {
     if len(node.Alarms)==0 {
-        return nil
+        return NothingTime
     }
-    return &node.Alarms[0].Time
+    return SomeTime(node.Alarms[0].Time)
 }
 
 func insertInPlace(alarms []Event, newev Event, combiner func(a EvPayload, b EvPayload) EvPayload) []Event {
@@ -82,7 +82,7 @@ func (node *DelayTickerNode) Rinse (inpipes InPipes) {
 
 // Union ticker
 
-func (node UnionTickerNode) Vote (t Time) *Time {
+func (node UnionTickerNode) Vote (t Time) MaybeTime {
     return Min(node.LeftTicker.Vote(t), node.RightTicker.Vote(t))
 }
 

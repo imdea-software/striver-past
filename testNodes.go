@@ -26,8 +26,8 @@ func random(min, max int) int {
     return rand.Intn(max - min) + min
 }
 
-func (ticker *randomIntIn) PeekNextTime () *dt.Time {
-    return &ticker.promisedT
+func (ticker *randomIntIn) PeekNextTime () dt.MaybeTime {
+    return dt.SomeTime(ticker.promisedT)
 }
 
 func (ticker *randomIntIn) Exec (t dt.Time) dt.EvPayload {
@@ -56,3 +56,19 @@ func changePointsExample() ([]dt.InStream,[]dt.OutStream) {
     changingpoints := dt.OutStream{"changingpoints", dt.SrcTickerNode{"randin"}, cpval}
     return []dt.InStream{randin}, []dt.OutStream{changingpoints}
 }
+
+func shiftExample() ([]dt.InStream,[]dt.OutStream) {
+    randindef := randomIntIn{0, 5, 0, 3}
+    randin := dt.InStream{"randin", &randindef}
+
+    tpointer := dt.TNode{}
+    inpreveq := dt.PrevEqValNode{tpointer, "randin", []dt.Event{}}
+
+    constVal := dt.FuncNode{[]dt.ValNode{&inpreveq}, func(args ...dt.EvPayload) dt.EvPayload{return dt.Some(dt.EpsVal{2, args[0].Val})}}
+    unitrandin := dt.OutStream{"unitrandin", dt.SrcTickerNode{"randin"}, constVal}
+    delayTicker := dt.DelayTickerNode{"unitrandin", dt.FstPayload, []dt.Event{}}
+    w := dt.WNode{}
+    shifted := dt.OutStream{"shifted", &delayTicker, w}
+    return []dt.InStream{randin}, []dt.OutStream{unitrandin, shifted}
+}
+

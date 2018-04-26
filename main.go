@@ -8,8 +8,9 @@ import (
 
 func main() {
 
-    inStreams, outStreams := changePointsExample()
-    // inStreams, outStreams := clockExample()
+    // inStreams, outStreams := shiftExample()
+    // inStreams, outStreams := changePointsExample()
+    inStreams, outStreams := clockExample()
 
     // Initialization
     inpipes := new(dt.InPipes)
@@ -17,7 +18,7 @@ func main() {
     var lastT dt.Time = -1 // minus infty
 
     for true {
-        var nextT *dt.Time = nil
+        var nextT dt.MaybeTime = dt.NothingTime
         // vote instreams
         for _, instr := range inStreams {
             aux := instr.StreamDef.PeekNextTime()
@@ -29,22 +30,22 @@ func main() {
             nextT = dt.Min(aux, nextT)
         }
         // end of execution
-        if nextT == nil {
+        if !nextT.IsSet {
             break
         }
         // exec on input streams
         for _, instr := range inStreams {
-            payload := instr.StreamDef.Exec(*nextT)
-            inpipes.Put(instr.Name, dt.Event{*nextT, payload})
+            payload := instr.StreamDef.Exec(nextT.Val)
+            inpipes.Put(instr.Name, dt.Event{nextT.Val, payload})
         }
         // exec on output streams
         for _, outstr:= range outStreams {
-            payload := outstr.TicksDef.Exec(*nextT, *inpipes)
+            payload := outstr.TicksDef.Exec(nextT.Val, *inpipes)
             if payload.IsSet {
-                outpayload := outstr.ValDef.Exec(*nextT, payload.Val, *inpipes)
-                inpipes.Put(outstr.Name, dt.Event{*nextT, outpayload})
+                outpayload := outstr.ValDef.Exec(nextT.Val, payload.Val, *inpipes)
+                inpipes.Put(outstr.Name, dt.Event{nextT.Val, outpayload})
             } else {
-                inpipes.Put(outstr.Name, dt.Event{*nextT, dt.NothingPayload})
+                inpipes.Put(outstr.Name, dt.Event{nextT.Val, dt.NothingPayload})
             }
         }
         // rinse output streams
@@ -54,7 +55,7 @@ func main() {
         }
         // reset pipes
         inpipes.Reset()
-        lastT = *nextT
+        lastT = nextT.Val
         time.Sleep(1000 * time.Millisecond)
     }
 

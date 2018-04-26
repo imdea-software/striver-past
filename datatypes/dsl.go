@@ -14,6 +14,17 @@ type EvPayload struct {
     Val interface{}
 }
 
+type MaybeTime struct {
+    IsSet bool;
+    Val Time
+}
+
+func SomeTime(val Time) MaybeTime {
+    return MaybeTime{true, val}
+}
+
+var NothingTime MaybeTime = MaybeTime{false, -100}
+
 func Some(val interface{}) EvPayload {
     return EvPayload{true, val}
 }
@@ -37,6 +48,6 @@ type InStream struct {
 }
 
 type InStreamDef interface {
-    PeekNextTime() *Time
+    PeekNextTime() MaybeTime
     Exec(t Time) EvPayload
 }

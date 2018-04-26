@@ -2,7 +2,7 @@ package datatypes
 
 // interface
 type TickerNode interface {
-    Vote (t Time) *Time;
+    Vote (t Time) MaybeTime;
     Exec (t Time, inpipes InPipes) EvPayload;
     Rinse (inpipes InPipes)
 }
