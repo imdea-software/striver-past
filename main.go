@@ -27,13 +27,19 @@ func (ticker *regularTicker) Exec (t dt.Time) dt.EvPayload {
 
 func main() {
     // Test streams
-    oddsInStream := dt.InStream {"odds", &regularTicker{2,0}}
-    allInStream := dt.InStream {"threes", &regularTicker{3,0}}
-    inStreams := []dt.InStream{oddsInStream, allInStream}
+    //oddsInStream := dt.InStream {"odds", &regularTicker{2,0}}
+    //allInStream := dt.InStream {"threes", &regularTicker{3,0}}
+    inStreams := []dt.InStream{}//oddsInStream, allInStream}
 
-    valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevValNode{dt.TNode{}, "odds", []dt.Event{}}}
-    shiftedvalodds := dt.OutStream{"shiftedthreesvals", &dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, &dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
-    outStreams := []dt.OutStream{valodds, shiftedvalodds}
+    //valodds := dt.OutStream{"oddsvals", dt.SrcTickerNode{"threes"}, &dt.PrevValNode{dt.TNode{}, "odds", []dt.Event{}}}
+    //shiftedvalodds := dt.OutStream{"shiftedthreesvals", &dt.DelayTickerNode{"threes", func (a dt.EvPayload, b dt.EvPayload)dt.EvPayload{return a}, []dt.Event{}}, &dt.PrevEqValNode{dt.TNode{}, "odds", *new([]dt.Event)}}
+    //outStreams := []dt.OutStream{valodds, shiftedvalodds}
+
+    constTicker := dt.ConstTickerNode{5, nil}
+    delayTicker := dt.DelayTickerNode{"clock", dt.FstPayload, []dt.Event{}}
+    constVal := dt.FuncNode{[]dt.ValNode{}, func(...dt.EvPayload) dt.EvPayload{return dt.Some(dt.EpsVal{2, nil})}}
+    clock := dt.OutStream{"clock", dt.UnionTickerNode{constTicker, &delayTicker, dt.FstPayload}, constVal}
+    outStreams := []dt.OutStream{clock}
     // Endof test streams
 
     // Initialization

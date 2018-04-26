@@ -20,3 +20,7 @@ func Leq(t0 Time, t1 Time) bool {
 func Lt(t0 Time, t1 Time) bool {
     return t0 < t1
 }
+
+func FstPayload(t0 EvPayload, _ EvPayload) EvPayload {
+    return t0
+}

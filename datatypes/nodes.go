@@ -15,7 +15,7 @@ type ValNode interface {
 // tickers
 type ConstTickerNode struct {
     ConstT Time
-    ConstW Time
+    ConstW interface{}
 }
 
 type SrcTickerNode struct {
