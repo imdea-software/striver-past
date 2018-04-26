@@ -6,6 +6,12 @@ import (
     "time"
 )
 
+// /* Example 1*/
+// /* no input */
+// output time_eps clock 
+// ticks  clock := {5} U delay clock 
+// value  clock := 2
+//
 func clockExample() ([]dt.InStream,[]dt.OutStream) {
     constTicker := dt.ConstTickerNode{5, nil}
     delayTicker := dt.DelayTickerNode{"clock", dt.FstPayload, []dt.Event{}}
@@ -14,12 +20,21 @@ func clockExample() ([]dt.InStream,[]dt.OutStream) {
     return []dt.InStream{}, []dt.OutStream{clock}
 }
 
+// /* Example 2 : Filter out events that do not change value */
+//
+// input  int s
+// output int change_s
+// ticks  changingpoints := randin
+// val    int changingpoints t := let prev=randin(<t) in let curr=rantin(~t) in
+//                            if prev!=cur then cur else notick
+
 type randomIntIn struct {
     promisedT dt.Time
     randomOffset dt.Time
     randomMin int
     randomMax int
 }
+
 
 func random(min, max int) int {
     rand.Seed(time.Now().Unix())
@@ -57,6 +72,17 @@ func changePointsExample() ([]dt.InStream,[]dt.OutStream) {
     return []dt.InStream{randin}, []dt.OutStream{changingpoints}
 }
 
+//
+// /* Example 3 : Filter out events that do not change value */
+//
+// input  int s /* randin below */
+// output int shift_s
+// output time_eps,int aux
+// ticks aux := s
+// val   (time_eps,int) aux t := (2s,s(~t))  /* Period(2, s) <--- sintactic sugar */
+// ticks  shif_s := delay Period(2,s) 
+// val    int shift_s t w := w
+//
 func shiftExample() ([]dt.InStream,[]dt.OutStream) {
     randindef := randomIntIn{0, 5, 0, 3}
     randin := dt.InStream{"randin", &randindef}

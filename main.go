@@ -8,9 +8,9 @@ import (
 
 func main() {
 
-    // inStreams, outStreams := shiftExample()
+    inStreams, outStreams := shiftExample()
     // inStreams, outStreams := changePointsExample()
-    inStreams, outStreams := clockExample()
+    //inStreams, outStreams := clockExample()
 
     // Initialization
     inpipes := new(dt.InPipes)
