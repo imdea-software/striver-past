@@ -9,6 +9,7 @@ import (
 func main() {
 
     inStreams, outStreams := changePointsExample()
+    // inStreams, outStreams := clockExample()
 
     // Initialization
     inpipes := new(dt.InPipes)

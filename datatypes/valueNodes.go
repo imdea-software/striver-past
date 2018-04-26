@@ -20,9 +20,9 @@ func (node WNode) Rinse (inpipes InPipes) {
 
 // aux funs
 
-func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
+func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, *Event) {
     if (len(seen) == 0 || !cmpfun(seen[0].Time)) {
-        return seen, NothingPayload // outside
+        return seen, nil // outside
     }
     i:=1
     for ;i<len(seen);i++ {
@@ -31,7 +31,7 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, EvPayload) {
         }
     }
     seen = seen[i-1:]
-    return seen, Some(seen[0])
+    return seen, &seen[0]
 }
 
 // Beta testing: generic funs
@@ -47,17 +47,16 @@ func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes),
         // It might be now
         rinsefun(inpipes)
     }
-    newseen, rett := consumeWhile(*seen, func(t Time) bool {return cmpfun(t, limitT)})
+    newseen, ev := consumeWhile(*seen, func(t Time) bool {return cmpfun(t, limitT)})
     *seen = newseen
-    if !rett.IsSet {
+    if ev==nil {
         // outside
-        return rett
+        return NothingPayload
     }
-    ev := rett.Val.(Event)
     if (!ev.Payload.IsSet) {
         panic("Empty payload in queue??")
     }
-    return Some(extractor(ev))
+    return Some(extractor(*ev))
 }
 
 func genericRinse (inpipes InPipes, tpointernode ValNode, srcStream StreamName, seen *[]Event) {
