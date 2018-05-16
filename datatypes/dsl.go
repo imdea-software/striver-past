@@ -1,6 +1,6 @@
 package datatypes
 
-type Time int
+type Time int64
 
 type StreamName string
 

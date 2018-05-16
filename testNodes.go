@@ -97,4 +97,3 @@ func shiftExample() ([]dt.InStream,[]dt.OutStream) {
     shifted := dt.OutStream{"shifted", &delayTicker, w}
     return []dt.InStream{randin}, []dt.OutStream{unitrandin, shifted}
 }
-

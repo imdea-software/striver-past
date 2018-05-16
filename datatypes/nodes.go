@@ -70,3 +70,25 @@ type FuncNode struct {
     ArgNodes []ValNode
     Innerfun func (args ...EvPayload) EvPayload
 }
+
+type InFromChannel struct {
+    InChannel chan Event
+    NextEvent *Event
+}
+
+func (ticker *InFromChannel) PeekNextTime () MaybeTime {
+    if ticker.NextEvent == nil {
+        nextEv := <-ticker.InChannel
+        ticker.NextEvent = &nextEv
+    }
+    return SomeTime(ticker.NextEvent.Time)
+}
+
+func (ticker *InFromChannel) Exec (t Time) EvPayload {
+    if t == ticker.NextEvent.Time {
+        ret := Some(ticker.NextEvent.Payload)
+        ticker.NextEvent = nil
+        return ret
+    }
+    return NothingPayload
+}
