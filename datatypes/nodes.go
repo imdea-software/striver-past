@@ -74,12 +74,18 @@ type FuncNode struct {
 type InFromChannel struct {
     InChannel chan Event
     NextEvent *Event
+    MinT Time
 }
 
 func (ticker *InFromChannel) PeekNextTime () MaybeTime {
     if ticker.NextEvent == nil {
         nextEv := <-ticker.InChannel
+        if (nextEv.Time < ticker.MinT) {
+            // Ensure safety of input events
+            nextEv.Time = ticker.MinT +1
+        }
         ticker.NextEvent = &nextEv
+        ticker.MinT = nextEv.Time
     }
     return SomeTime(ticker.NextEvent.Time)
 }
