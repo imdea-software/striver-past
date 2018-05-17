@@ -51,3 +51,8 @@ type InStreamDef interface {
     PeekNextTime() MaybeTime
     Exec(t Time) EvPayload
 }
+
+type FlowingEvent struct {
+    Name StreamName
+    Event Event
+}

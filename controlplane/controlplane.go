@@ -4,10 +4,10 @@ import (
     dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 )
 
-func Start(inStreams []dt.InStream, outStreams []dt.OutStream) {
+func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.FlowingEvent) {
 
     // Initialization
-    inpipes := new(dt.InPipes)
+    inpipes := dt.InPipes{make(map[dt.StreamName]dt.Event), outchan}
     inpipes.Reset()
     var lastT dt.Time = -1 // minus infty
 
@@ -34,9 +34,9 @@ func Start(inStreams []dt.InStream, outStreams []dt.OutStream) {
         }
         // exec on output streams
         for _, outstr:= range outStreams {
-            payload := outstr.TicksDef.Exec(nextT.Val, *inpipes)
+            payload := outstr.TicksDef.Exec(nextT.Val, inpipes)
             if payload.IsSet {
-                outpayload := outstr.ValDef.Exec(nextT.Val, payload.Val, *inpipes)
+                outpayload := outstr.ValDef.Exec(nextT.Val, payload.Val, inpipes)
                 inpipes.Put(outstr.Name, dt.Event{nextT.Val, outpayload})
             } else {
                 inpipes.Put(outstr.Name, dt.Event{nextT.Val, dt.NothingPayload})
@@ -44,8 +44,8 @@ func Start(inStreams []dt.InStream, outStreams []dt.OutStream) {
         }
         // rinse output streams
         for _, outstr:= range outStreams {
-            outstr.TicksDef.Rinse(*inpipes)
-            outstr.ValDef.Rinse(*inpipes)
+            outstr.TicksDef.Rinse(inpipes)
+            outstr.ValDef.Rinse(inpipes)
         }
         // reset pipes
         inpipes.Reset()

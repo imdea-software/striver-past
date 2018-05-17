@@ -86,7 +86,7 @@ func (ticker *InFromChannel) PeekNextTime () MaybeTime {
 
 func (ticker *InFromChannel) Exec (t Time) EvPayload {
     if t == ticker.NextEvent.Time {
-        ret := Some(ticker.NextEvent.Payload)
+        ret := ticker.NextEvent.Payload
         ticker.NextEvent = nil
         return ret
     }
