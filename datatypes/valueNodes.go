@@ -34,6 +34,8 @@ func consumeWhile(seen []Event, cmpfun func(Time) bool) ([]Event, *Event) {
     return seen, &seen[0]
 }
 
+func norinse(InPipes) {}
+
 // Beta testing: generic funs
 
 func genericExec(t Time, w interface{}, inpipes InPipes, rinsefun func(InPipes), tpointernode ValNode, cmpfun func(t0 Time, t1 Time) bool, seen *[]Event, extractor func(Event) interface{}) EvPayload {
@@ -88,7 +90,7 @@ func (node *PrevEqValNode) Rinse (inpipes InPipes) {
 // PrevValNode
 
 func (node *PrevValNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
-    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Lt, &node.Seen, extractPayload)
+    return genericExec(t, w, inpipes, norinse, node.TPointer, Lt, &node.Seen, extractPayload)
 }
 
 func (node *PrevValNode) Rinse (inpipes InPipes) {
@@ -105,10 +107,10 @@ func (node *PrevEqNode) Rinse (inpipes InPipes) {
     genericRinse(inpipes, node.TPointer, node.SrcStream, &node.Seen)
 }
 
-// PrevEqNode
+// PrevNode
 
 func (node *PrevNode) Exec (t Time, w interface{}, inpipes InPipes) EvPayload {
-    return genericExec(t, w, inpipes, node.Rinse, node.TPointer, Lt, &node.Seen, extractTime)
+    return genericExec(t, w, inpipes, norinse, node.TPointer, Lt, &node.Seen, extractTime)
 }
 
 func (node *PrevNode) Rinse (inpipes InPipes) {
