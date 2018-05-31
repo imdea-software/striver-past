@@ -1,5 +1,7 @@
 package datatypes
 
+import "fmt"
+
 // interface
 type TickerNode interface {
     Vote (t Time) MaybeTime;
@@ -75,12 +77,21 @@ type InFromChannel struct {
     InChannel chan Event
     NextEvent *Event
     MinT Time
+    Closed bool
 }
 
 func (ticker *InFromChannel) PeekNextTime () MaybeTime {
+    if ticker.Closed {
+        return NothingTime
+    }
     if ticker.NextEvent == nil {
-        nextEv := <-ticker.InChannel
-        if (nextEv.Time < ticker.MinT) {
+        nextEv, open := <-ticker.InChannel
+        if !open {
+            fmt.Println("Closing input from channel")
+            ticker.Closed = true
+            return NothingTime
+        }
+        if (nextEv.Time <= ticker.MinT) {
             // Ensure safety of input events
             nextEv.Time = ticker.MinT +1
         }
@@ -91,6 +102,9 @@ func (ticker *InFromChannel) PeekNextTime () MaybeTime {
 }
 
 func (ticker *InFromChannel) Exec (t Time) EvPayload {
+    if ticker.Closed {
+        return NothingPayload
+    }
     if t == ticker.NextEvent.Time {
         ret := ticker.NextEvent.Payload
         ticker.NextEvent = nil

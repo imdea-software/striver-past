@@ -3,9 +3,10 @@ package controlplane
 import (
     dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     //"time"
+    "fmt"
 )
 
-func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.FlowingEvent) {
+func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.FlowingEvent, killchan chan bool /*void, actually*/) {
 
     // Initialization
     inpipes := dt.InPipes{make(map[dt.StreamName]dt.Event), outchan}
@@ -26,7 +27,15 @@ func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.F
         }
         // end of execution
         if !nextT.IsSet {
+            fmt.Println("Striver no more Ts")
             break
+        }
+        select {
+        case <-killchan:
+            fmt.Println("Striver killchan closed")
+            break // end of execution
+        default: // continue execution
+            fmt.Println("Striver executing")
         }
         // exec on input streams
         for _, instr := range inStreams {
@@ -53,4 +62,6 @@ func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.F
         lastT = nextT.Val
         //time.Sleep(1000 * time.Millisecond)
     }
+    fmt.Println("Finishing Striver")
+    close(outchan)
 }
