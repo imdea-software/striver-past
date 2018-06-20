@@ -16,7 +16,7 @@ func (inpipes *InPipes) Reset() {
 func (inpipes InPipes) strictConsume(streamId StreamName) Event {
     ev,ok := inpipes.Pipes[streamId]
     if !ok {
-        panic("Failed strict consume")
+        panic("Failed strict consume on pipe "+string(streamId))
     }
     return ev
 }
