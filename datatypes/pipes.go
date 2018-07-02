@@ -1,6 +1,6 @@
 package datatypes
 
-import "fmt"
+//import "fmt"
 
 type InPipes struct {
     Pipes map[StreamName]Event
@@ -24,11 +24,11 @@ func (inpipes InPipes) strictConsume(streamId StreamName) Event {
 // endof aux methods
 
 func (inpipes InPipes) Put(streamId StreamName, ev Event) {
-    fmt.Printf("%s[%d]: ", streamId, ev.Time)
+    //fmt.Printf("%s[%d]: ", streamId, ev.Time)
     if !ev.Payload.IsSet {
-        fmt.Println("NOTICK")
+        //fmt.Println("NOTICK")
     } else {
-        fmt.Println(ev.Payload.Val)
+        //fmt.Println(ev.Payload.Val)
         if inpipes.OutChan != nil {
             inpipes.OutChan <- FlowingEvent{streamId, ev}
         }
