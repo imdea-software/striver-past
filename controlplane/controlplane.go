@@ -13,6 +13,8 @@ func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.F
     inpipes.Reset()
     var lastT dt.Time = -1 // minus infty
 
+    exit := false
+
     for true {
         var nextT dt.MaybeTime = dt.NothingTime
         // vote instreams
@@ -33,10 +35,11 @@ func Start(inStreams []dt.InStream, outStreams []dt.OutStream, outchan chan dt.F
         select {
         case <-killchan:
             fmt.Println("Striver killchan closed")
-            break // end of execution
+            exit=true // end of execution
         default: // continue execution
-            fmt.Println("Striver executing")
+            // fmt.Println("Striver executing")
         }
+        if exit { break}
         // exec on input streams
         for _, instr := range inStreams {
             payload := instr.StreamDef.Exec(nextT.Val)
