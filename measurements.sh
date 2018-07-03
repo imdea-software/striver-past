@@ -1,11 +1,10 @@
 #!/bin/bash
 
-SEC=5
+SEC=60
 
 timeout -s SIGINT ${SEC}s ./striver-go > mes &
 
 PID=$!
-echo $PID
 
 COUNTER=0
 RES=0

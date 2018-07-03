@@ -11,14 +11,18 @@ import (
 
 func main() {
 
+    var lastEvent dt.FlowingEvent
+    // inStreams, outStreams, killcb := empirical.ArrivalStock(100)
+    inStreams, outStreams, killcb := empirical.LastK(100)
+
     //inStreams, outStreams := shiftExample()
-    inStreams, outStreams, killcb := empirical.ArrivalStock(1)
     // inStreams, outStreams := changePointsExample()
     //inStreams, outStreams := clockExample()
     kchan := make (chan bool)
     outchan := make (chan dt.FlowingEvent)
     go func(){
-        for _ = range outchan {
+        for ev := range outchan {
+            lastEvent = ev
             // Ignore incoming events
         }
     }()
@@ -35,4 +39,5 @@ func main() {
     controlplane.Start(inStreams, outStreams, outchan, kchan)
     fmt.Println("End of execution")
     killcb()
+    fmt.Println(lastEvent)
 }
