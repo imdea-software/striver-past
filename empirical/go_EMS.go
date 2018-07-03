@@ -1,18 +1,17 @@
 package empirical
 
 import (
-    "fmt"
+    //"fmt"
     dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     "math/rand"
     "strconv"
 )
 
-func ArrivalStock(products int) (inStreams []dt.InStream, outStreams []dt.OutStream, killcallback func()) {
+func ArrivalStock(products, maxevs int) (inStreams []dt.InStream, outStreams []dt.OutStream, killcallback func()) {
 
     inStreams = []dt.InStream{}
     outStreams = []dt.OutStream{}
     chans := make([](chan dt.Event), products*2)
-    evCounts := make([]int, products*2)
     for i:=0 ; i<products ; i++ {
         // Input streams
         saleName := dt.StreamName("sale_"+strconv.Itoa(i))
@@ -67,20 +66,19 @@ func ArrivalStock(products int) (inStreams []dt.InStream, outStreams []dt.OutStr
         outStreams = append(outStreams, stock)
     }
 
-    killcallback = func() { fmt.Println("Processed events:", sum(evCounts)) }
+    killcallback = func() {}
 
     // Feed data
-    for i,c := range chans {
-        go func(i int, c chan dt.Event) {
+    for _,c := range chans {
+        go func(c chan dt.Event) {
             nextev := 500 + rand.Int63n(20) + 1
-            for {
+            for i:=0;i<maxevs/products;i++ {
                 nextev = nextev + rand.Int63n(20) + 1
                 c <- dt.Event{dt.Time(nextev), dt.Some(10)}
-                evCounts[i]=evCounts[i]+1
                 //fmt.Println("sending ev ",evCounts[i],nextev)
             }
             close(c)
-        }(i,c)
+        }(c)
     }
     return
 }

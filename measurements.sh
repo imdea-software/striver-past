@@ -1,11 +1,11 @@
 #!/bin/bash
 
-SEC=30
-
 # killall striver-go &>/dev/null || true
-timeout -s SIGINT ${SEC}s ./striver-go AVGK 10 > mes &
-sleep 1
-PID=`ps | grep striver | awk '{print $1}'`
+PROG=$1
+ARG2=$2
+MAXEVS=$3
+./striver-go $PROG $ARG2 $MAXEVS > /dev/null &
+PID=$!
 
 # echo $PID
 
@@ -19,8 +19,5 @@ do
     MEMORY=$(($MEMORY + `ps -p $PID -o vsize |grep -v VSZ`))
     sleep 1
 done
-PE=$(cat mes | grep Processed | awk '{print $3}')
-rm mes
 
-echo EVRATIO $(($PE / $SEC))
 echo MEMORY $(($MEMORY / $COUNTER))

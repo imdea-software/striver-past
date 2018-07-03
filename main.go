@@ -8,6 +8,7 @@ import (
     "os"
     "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/empirical"
     "strconv"
+    "time"
 )
 
 func main() {
@@ -19,13 +20,18 @@ func main() {
     if err != nil {
         panic(err)
     }
-    inStreams, outStreams, killcb := empirical.ArrivalStock(arg2)
-    if os.Args[1]=="AVGK" {
-        fmt.Fprintf(os.Stderr, "Running AVGK with K=%d\n",arg2)
-        inStreams, outStreams, killcb = empirical.EffLastK(arg2)
-    } else {
-        fmt.Fprintf(os.Stderr, "Running STOCK with P=%d\n",arg2)
+    maxevs,err := strconv.Atoi(os.Args[3])
+    if err != nil {
+        panic(err)
     }
+    inStreams, outStreams, killcb := empirical.ArrivalStock(arg2,maxevs)
+    if os.Args[1]=="AVGK" {
+        fmt.Fprintf(os.Stderr, "Running AVGK with K=%d",arg2)
+        inStreams, outStreams, killcb = empirical.EffLastK(arg2,maxevs)
+    } else {
+        fmt.Fprintf(os.Stderr, "Running STOCK with P=%d",arg2)
+    }
+    fmt.Fprintf(os.Stderr, ", maxevs=%d\n",maxevs)
 
     //inStreams, outStreams := shiftExample()
     // inStreams, outStreams := changePointsExample()
@@ -48,7 +54,11 @@ func main() {
         }
     }()
 
+    start := time.Now()
     controlplane.Start(inStreams, outStreams, outchan, kchan)
+    elapsed := time.Since(start)
+    //fmt.Fprintf(os.Stderr, "Took %f seconds\n", elapsed.Seconds())
+    fmt.Fprintf(os.Stderr, "Event ratio is %f events per second\n", float64(maxevs)/(elapsed.Seconds()))
     fmt.Println("End of execution")
     killcb()
     fmt.Println(lastEvent)

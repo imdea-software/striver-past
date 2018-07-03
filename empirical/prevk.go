@@ -1,7 +1,7 @@
 package empirical
 
 import (
-    "fmt"
+    //"fmt"
     dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     "math/rand"
 )
@@ -10,7 +10,6 @@ func LastK(k int) (inStreams []dt.InStream, outStreams []dt.OutStream, killcallb
 
     inStreams = []dt.InStream{}
     outStreams = []dt.OutStream{}
-    evCount := 0
     // Input streams
     saleName := dt.StreamName("sale")
     saleChan := make(chan dt.Event)
@@ -68,7 +67,7 @@ func LastK(k int) (inStreams []dt.InStream, outStreams []dt.OutStream, killcallb
     avgKVal := dt.FuncNode{args, avgFun}
     avgK := dt.OutStream{avgKName, avgKTicks, avgKVal}
     outStreams = append(outStreams, avgK)
-    killcallback = func() { fmt.Println("Processed events:", evCount) }
+    killcallback = func() {}
 
     // Feed data
     go func() {
@@ -76,7 +75,6 @@ func LastK(k int) (inStreams []dt.InStream, outStreams []dt.OutStream, killcallb
         for {
             nextev = nextev + rand.Int63n(20) + 1
             saleChan <- dt.Event{dt.Time(nextev), dt.Some(rand.Intn(20))}
-            evCount++
             //fmt.Println("sending ev ",nextev)
         }
         close(saleChan)

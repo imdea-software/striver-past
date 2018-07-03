@@ -1,31 +1,96 @@
-stock, 1 product
-EVRATIO 251518
-MEMORY 11556
-
-stock, 10 products
-EVRATIO 104437
-MEMORY 11556
-
-stock, 100 products
-EVRATIO 104686
-MEMORY 11556
-
-sotck, 1000 products
-EVRATIO 62754
-MEMORY 11556
-
-avgk, k=1
-EVRATIO 225782
-MEMORY 11556
-
-avgk, k=10
-EVRATIO 50208
-MEMORY 11556
-
-avgk, k=100
-EVRATIO 607
-MEMORY 11556
-
-avgk, k=1000
-EVRATIO 1
-MEMORY 11556
+Running AVGK with K=1, maxevs=1000
+Event ratio is 89810.109098 events per second
+MEMORY 6360
+Running AVGK with K=1, maxevs=10000
+Event ratio is 135711.774465 events per second
+MEMORY 6360
+Running AVGK with K=1, maxevs=100000
+Event ratio is 153121.293895 events per second
+MEMORY 6616
+Running AVGK with K=1, maxevs=1000000
+Event ratio is 144040.496050 events per second
+MEMORY 9517
+Running AVGK with K=10, maxevs=1000
+Event ratio is 69646.928379 events per second
+MEMORY 7416
+Running AVGK with K=10, maxevs=10000
+Event ratio is 96940.192370 events per second
+MEMORY 6360
+Running AVGK with K=10, maxevs=100000
+Event ratio is 111000.956475 events per second
+MEMORY 4696
+Running AVGK with K=10, maxevs=1000000
+Event ratio is 106456.423259 events per second
+MEMORY 9509
+Running AVGK with K=50, maxevs=1000
+Event ratio is 34643.323256 events per second
+MEMORY 7064
+Running AVGK with K=50, maxevs=10000
+Event ratio is 59447.778999 events per second
+MEMORY 7672
+Running AVGK with K=50, maxevs=100000
+Event ratio is 57678.084487 events per second
+MEMORY 9386
+Running AVGK with K=50, maxevs=1000000
+Event ratio is 50545.466239 events per second
+MEMORY 9925
+Running AVGK with K=100, maxevs=1000
+Event ratio is 23358.673055 events per second
+MEMORY 7416
+Running AVGK with K=100, maxevs=10000
+Event ratio is 32278.841990 events per second
+MEMORY 7416
+Running AVGK with K=100, maxevs=100000
+Event ratio is 29776.879555 events per second
+MEMORY 10243
+Running AVGK with K=100, maxevs=1000000
+Event ratio is 27636.116919 events per second
+MEMORY 10997
+Running STOCK with P=1, maxevs=1000
+Event ratio is 71649.184385 events per second
+MEMORY 6360
+Running STOCK with P=1, maxevs=10000
+Event ratio is 98788.657434 events per second
+MEMORY 6616
+Running STOCK with P=1, maxevs=100000
+Event ratio is 116718.127806 events per second
+MEMORY 6872
+Running STOCK with P=1, maxevs=1000000
+Event ratio is 110050.936951 events per second
+MEMORY 9663
+Running STOCK with P=10, maxevs=1000
+Event ratio is 35552.207012 events per second
+MEMORY 4696
+Running STOCK with P=10, maxevs=10000
+Event ratio is 51503.585105 events per second
+MEMORY 7672
+Running STOCK with P=10, maxevs=100000
+Event ratio is 48113.264205 events per second
+MEMORY 9253
+Running STOCK with P=10, maxevs=1000000
+Event ratio is 44354.622681 events per second
+MEMORY 9883
+Running STOCK with P=50, maxevs=1000
+Event ratio is 27208.693591 events per second
+MEMORY 7416
+Running STOCK with P=50, maxevs=10000
+Event ratio is 34308.520904 events per second
+MEMORY 4696
+Running STOCK with P=50, maxevs=100000
+Event ratio is 43865.048622 events per second
+MEMORY 8901
+Running STOCK with P=50, maxevs=1000000
+Event ratio is 43686.935166 events per second
+MEMORY 9929
+Running STOCK with P=100, maxevs=1000
+Event ratio is 21919.812591 events per second
+MEMORY 7416
+Running STOCK with P=100, maxevs=10000
+Event ratio is 46670.155354 events per second
+MEMORY 6008
+Running STOCK with P=100, maxevs=100000
+Event ratio is 37178.604502 events per second
+MEMORY 10309
+Running STOCK with P=100, maxevs=1000000
+Event ratio is 38459.309168 events per second
+MEMORY 10904
