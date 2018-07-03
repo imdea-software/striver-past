@@ -1,10 +1,13 @@
 #!/bin/bash
 
-SEC=60
+SEC=30
 
-timeout -s SIGINT ${SEC}s ./striver-go > mes &
+# killall striver-go &>/dev/null || true
+timeout -s SIGINT ${SEC}s ./striver-go AVGK 10 > mes &
+sleep 1
+PID=`ps | grep striver | awk '{print $1}'`
 
-PID=$!
+# echo $PID
 
 COUNTER=0
 RES=0

@@ -7,13 +7,25 @@ import (
     "os/signal"
     "os"
     "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/empirical"
+    "strconv"
 )
 
 func main() {
 
     var lastEvent dt.FlowingEvent
+    //events := []dt.FlowingEvent{}
     // inStreams, outStreams, killcb := empirical.ArrivalStock(100)
-    inStreams, outStreams, killcb := empirical.LastK(100)
+    arg2,err := strconv.Atoi(os.Args[2])
+    if err != nil {
+        panic(err)
+    }
+    inStreams, outStreams, killcb := empirical.ArrivalStock(arg2)
+    if os.Args[1]=="AVGK" {
+        fmt.Fprintf(os.Stderr, "Running AVGK with K=%d\n",arg2)
+        inStreams, outStreams, killcb = empirical.EffLastK(arg2)
+    } else {
+        fmt.Fprintf(os.Stderr, "Running STOCK with P=%d\n",arg2)
+    }
 
     //inStreams, outStreams := shiftExample()
     // inStreams, outStreams := changePointsExample()
@@ -23,7 +35,7 @@ func main() {
     go func(){
         for ev := range outchan {
             lastEvent = ev
-            // Ignore incoming events
+            //events = append(events, ev)
         }
     }()
 
@@ -40,4 +52,5 @@ func main() {
     fmt.Println("End of execution")
     killcb()
     fmt.Println(lastEvent)
+    //fmt.Println(events[0])
 }
