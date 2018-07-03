@@ -4,32 +4,42 @@ import (
     "fmt"
     dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     "math/rand"
+    "strconv"
 )
 
 func ArrivalStock(products int) (inStreams []dt.InStream, outStreams []dt.OutStream, killcallback func()) {
-    // Input streams
-    saleName := dt.StreamName("sale")
-    saleChan := make(chan dt.Event)
-    arrivalName := dt.StreamName("arrival")
-    arrivalChan := make(chan dt.Event)
-	sale := dt.InStream{saleName, &dt.InFromChannel{saleChan, nil, 0, false}}
-	arrival := dt.InStream{arrivalName, &dt.InFromChannel{arrivalChan, nil, 0, false}}
-    inStreams = []dt.InStream{sale, arrival}
 
-    // Output stream:
-    stockName := dt.StreamName("stock")
-    // ticks
-    saleSrcTick := dt.SrcTickerNode{saleName}
-    arrivalSrcTick := dt.SrcTickerNode{arrivalName}
-    stockTicks := dt.UnionTickerNode{saleSrcTick, arrivalSrcTick, dt.FstPayload}
-    // val
-    tpointer := dt.TNode{}
-    stockPrevVal := dt.PrevValNode{tpointer,stockName, []dt.Event{}}
-    arrivalPrevEq := dt.PrevEqNode{tpointer, arrivalName, []dt.Event{}}
-    arrivalPrevEqVal := dt.PrevEqValNode{tpointer, arrivalName, []dt.Event{}}
-    salePrevEq := dt.PrevEqNode{tpointer, saleName, []dt.Event{}}
-    salePrevEqVal := dt.PrevEqValNode{tpointer, saleName, []dt.Event{}}
-    stockFun := func(args ...dt.EvPayload) dt.EvPayload{
+    inStreams = []dt.InStream{}
+    outStreams = []dt.OutStream{}
+    chans := make([](chan dt.Event), products*2)
+    evCounts := make([]int, products*2)
+    for i:=0 ; i<products ; i++ {
+        // Input streams
+        saleName := dt.StreamName("sale_"+strconv.Itoa(i))
+        saleChan := make(chan dt.Event)
+        chans[i*2] = saleChan
+        sale := dt.InStream{saleName, &dt.InFromChannel{saleChan, nil, 0, false}}
+        arrivalName := dt.StreamName("arrival_"+strconv.Itoa(i))
+        arrivalChan := make(chan dt.Event)
+        chans[i*2+1] = arrivalChan
+        arrival := dt.InStream{arrivalName, &dt.InFromChannel{arrivalChan, nil, 0, false}}
+        inStreams = append(inStreams, sale)
+        inStreams = append(inStreams, arrival)
+
+        // Output stream:
+        stockName := dt.StreamName("stock_"+strconv.Itoa(i))
+        // ticks
+        saleSrcTick := dt.SrcTickerNode{saleName}
+        arrivalSrcTick := dt.SrcTickerNode{arrivalName}
+        stockTicks := dt.UnionTickerNode{saleSrcTick, arrivalSrcTick, dt.FstPayload}
+        // val
+        tpointer := dt.TNode{}
+        stockPrevVal := dt.PrevValNode{tpointer,stockName, []dt.Event{}}
+        arrivalPrevEq := dt.PrevEqNode{tpointer, arrivalName, []dt.Event{}}
+        arrivalPrevEqVal := dt.PrevEqValNode{tpointer, arrivalName, []dt.Event{}}
+        salePrevEq := dt.PrevEqNode{tpointer, saleName, []dt.Event{}}
+        salePrevEqVal := dt.PrevEqValNode{tpointer, saleName, []dt.Event{}}
+        stockFun := func(args ...dt.EvPayload) dt.EvPayload {
             t := args[0]
             lastStock := args[1]
             preveqArrival := args[2]
@@ -51,35 +61,35 @@ func ArrivalStock(products int) (inStreams []dt.InStream, outStreams []dt.OutStr
             }
             return dt.Some(stock)
         }
-    stockVal := dt.FuncNode{[]dt.ValNode{tpointer, &stockPrevVal, &arrivalPrevEq, &arrivalPrevEqVal, &salePrevEq, &salePrevEqVal}, stockFun}
+        stockVal := dt.FuncNode{[]dt.ValNode{tpointer, &stockPrevVal, &arrivalPrevEq, &arrivalPrevEqVal, &salePrevEq, &salePrevEqVal}, stockFun}
 
-    stock := dt.OutStream{stockName, stockTicks, stockVal}
+        stock := dt.OutStream{stockName, stockTicks, stockVal}
+        outStreams = append(outStreams, stock)
+    }
 
-    outStreams = []dt.OutStream{stock}
-
-    evCountArrival := 0
-    evCountSale := 0
-    killcallback = func() { fmt.Println("Processed events:", evCountArrival + evCountSale) }
+    killcallback = func() { fmt.Println("Processed events:", sum(evCounts)) }
 
     // Feed data
-    go func() {
-        nextArrival := 500 + rand.Int63n(20) + 1
-        for {
-            nextArrival = nextArrival + rand.Int63n(20) + 1
-            arrivalChan <- dt.Event{dt.Time(nextArrival), dt.Some(10)}
-            evCountArrival++
-        }
-        close(arrivalChan)
-    }()
-    go func() {
-        nextSale := 500 + rand.Int63n(20) + 1
-        for {
-            nextSale = nextSale + rand.Int63n(20) + 1
-            saleChan <- dt.Event{dt.Time(nextSale), dt.Some(15)}
-            evCountSale++
-        }
-        close(saleChan)
-    }()
+    for i,c := range chans {
+        go func(i int, c chan dt.Event) {
+            nextev := 500 + rand.Int63n(20) + 1
+            for {
+                nextev = nextev + rand.Int63n(20) + 1
+                c <- dt.Event{dt.Time(nextev), dt.Some(10)}
+                evCounts[i]=evCounts[i]+1
+                //fmt.Println("sending ev ",evCounts[i],nextev)
+            }
+            close(c)
+        }(i,c)
+    }
     return
+}
+
+func sum(ints []int) int {
+    ret := 0
+    for _,i := range ints {
+        ret += i
+    }
+    return ret
 }
 

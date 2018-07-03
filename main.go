@@ -12,7 +12,7 @@ import (
 func main() {
 
     //inStreams, outStreams := shiftExample()
-    inStreams, outStreams, killcb := empirical.ArrivalStock(5)
+    inStreams, outStreams, killcb := empirical.ArrivalStock(1)
     // inStreams, outStreams := changePointsExample()
     //inStreams, outStreams := clockExample()
     kchan := make (chan bool)
@@ -29,10 +29,10 @@ func main() {
     go func(){
         for _ = range c {
             close(kchan)
-            killcb()
         }
     }()
 
     controlplane.Start(inStreams, outStreams, outchan, kchan)
     fmt.Println("End of execution")
+    killcb()
 }
