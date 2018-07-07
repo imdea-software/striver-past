@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# killall striver-go &>/dev/null || true
+# killall striver &>/dev/null || true
 PROG=$1
 ARG2=$2
 MAXEVS=$3
-./striver-go $PROG $ARG2 $MAXEVS > /dev/null &
+./striver $PROG $ARG2 $MAXEVS > /dev/null &
 PID=$!
 
 # echo $PID
