@@ -1,4 +1,4 @@
-package main
+package empirical
 
 import (
     dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
@@ -12,7 +12,7 @@ import (
 // ticks  clock := {5} U delay clock 
 // value  clock := 2
 //
-func clockExample() ([]dt.InStream,[]dt.OutStream) {
+func ClockExample() ([]dt.InStream,[]dt.OutStream) {
     constTicker := dt.ConstTickerNode{5, nil}
     delayTicker := dt.DelayTickerNode{"clock", dt.FstPayload, []dt.Event{}}
     constVal := dt.FuncNode{[]dt.ValNode{}, func(...dt.EvPayload) dt.EvPayload{return dt.Some(dt.EpsVal{2, nil})}}
@@ -53,7 +53,7 @@ func (ticker *randomIntIn) Exec (t dt.Time) dt.EvPayload {
     return dt.NothingPayload
 }
 
-func changePointsExample() ([]dt.InStream,[]dt.OutStream) {
+func ChangePointsExample() ([]dt.InStream,[]dt.OutStream) {
     randindef := randomIntIn{0, 5, 0, 3}
     randin := dt.InStream{"randin", &randindef}
 
@@ -83,7 +83,7 @@ func changePointsExample() ([]dt.InStream,[]dt.OutStream) {
 // ticks  shif_s := delay Period(2,s) 
 // val    int shift_s t w := w
 //
-func shiftExample() ([]dt.InStream,[]dt.OutStream) {
+func ShiftExample() ([]dt.InStream,[]dt.OutStream) {
     randindef := randomIntIn{0, 5, 0, 3}
     randin := dt.InStream{"randin", &randindef}
 
