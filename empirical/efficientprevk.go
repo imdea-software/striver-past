@@ -1,7 +1,7 @@
 package empirical
 
 import (
-    dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+    dt "github.com/imdea-software/striver/datatypes"
     "math/rand"
 )
 

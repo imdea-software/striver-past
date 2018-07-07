@@ -2,11 +2,11 @@ package main
 
 import (
     "fmt"
-    "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/controlplane"
-    dt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+    "github.com/imdea-software/striver/controlplane"
+    dt "github.com/imdea-software/striver/datatypes"
     "os/signal"
     "os"
-    "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/empirical"
+    "github.com/imdea-software/striver/empirical"
     "strconv"
     "time"
 )
